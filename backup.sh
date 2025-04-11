@@ -1,14 +1,19 @@
 #! /bin/bash
 
+#Function for getting date
+get_date () {
+	gen_date=$(date '+%d-%m-%Y')
+	spec_date=$(date -d "+3 hours" +"%H-%M") # To account for the 3 hours delay on the clock
+}
+
 # Making the backup function for files/directories with namegiving process
 backup_file_dir () {
         # Add timestamp to backup filename
-        gen_date=$(date '+%d-%m-%Y')
-        spec_date=$(date -d "+3 hours" +"%H-%M") # To account for the 3 hours delay on the clock
-        backup_filename="${f_d_to_backup}_${gen_date}_${spec_date}"
-        path_to_backup="${f_d_where_to_backup}/${backup_filename}"
+        get_date
+        f_d_backup_name="${f_d_to_backup}_${gen_date}_${spec_date}"
+        f_d_path_to_backup="${f_d_where_to_backup}/${f_d_backup_name}"
         # Real copying part
-        cp "$f_d_to_backup" "$path_to_backup"
+        cp -r "$f_d_to_backup" "$f_d_path_to_backup"
         echo "Backup successful!"
 }
 
@@ -16,12 +21,11 @@ backup_file_dir () {
 # Making the backup function for databases with namegiving process
 backup_db () {
 	# Add timestamp to backup database
-        gen_date=$(date '+%d-%m-%Y')
-        spec_date=$(date -d "+3 hours" +"%H-%M") # To account for the 3 hours delay on the clock
-        backup_db_name="${f_d_to_backup}_${gen_date}_${spec_date}"
-        path_to_backup="${f_d_where_to_backup}/${backup_db_name}"
+        get_date
+        db_backup_name="${db_to_backup}_${gen_date}_${spec_date}"
+        db_path_to_backup="${db_where_to_backup}/${db_backup_name}"
         # Real backup process
-	sudo mysqldump -u root -p mydatabase --databases >> "${path_to_backup}.sql"
+	sudo mysqldump -u root -p"$db_password" "$db_to_backup" --databases >> "${db_path_to_backup}.sql"
         echo "Backup successful!"
 }
 
@@ -34,7 +38,7 @@ while true; do
 			read -p "What file/directory do you want to backup?: " f_d_to_backup
 			read -p "Where do you want to back it up?: " f_d_where_to_backup
 	##################### MAKE SURE USER HAS TO CONFIRM THIS IS WHAT HE WANTS TO BACKUP #####################
-			echo ""$f_d_to_backup" and "$f_d_where_to_backup""
+			echo "${f_d_to_backup} and ${f_d_where_to_backup}"
 	##################### MAKE SURE USER HAS TO CONFIRM THIS IS WHAT HE WANTS TO BACKUP #####################
 
 			while true; do
@@ -46,7 +50,7 @@ while true; do
 						ls -all "$f_d_where_to_backup"
 						break
 					else
-						echo ""$f_d_where_to_backup" doesn't exist"
+						echo "${f_d_where_to_backup} doesn't exist"
 						while true; do
 							read -p "Do you want to create this directory? (y/n): " f_d_create_dir_yn
 							case "$f_d_create_dir_yn" in
@@ -71,7 +75,7 @@ while true; do
 						done
 					fi
 				else
-					echo ""$f_d_to_backup" doesn't exist"
+					echo "${f_d_to_backup} doesn't exist"
 					read -p "Give a valid thing to backup: " f_d_to_backup
 				fi
 			done
@@ -80,16 +84,17 @@ while true; do
 		#########################################################################################################
 		#########################################################################################################
 		database|Database|DATABASE|db|DB|Db|dB)
-			echo "Enter your password to login to your databases."
-			sudo mysql -u root -p -e "SHOW DATABASES;"
+			read -sp "Enter your password to login to your databases." db_password
+			echo
+			sudo mysql -u root -p"$db_password" -e "SHOW DATABASES;"
 			read -p "What database do you want to backup?: " db_to_backup
 	        	read -p "Where do you want to back it up?: " db_where_to_backup
 		##################### MAKE SURE USER HAS TO CONFIRM THIS IS WHAT HE WANTS TO BACKUP #####################
-			echo ""$db_to_backup" and "$db_where_to_backup""
+			echo "${db_to_backup} and ${db_where_to_backup}"
 		##################### MAKE SURE USER HAS TO CONFIRM THIS IS WHAT HE WANTS TO BACKUP #####################
 
 			while true; do
-		                if sudo mysql -u root -p -e "SHOW DATABASES;" | tail -n +2 | grep -Fxq "$db_to_backup"; then
+		                if sudo mysql -u root -p"$db_password" -e "SHOW DATABASES;" | tail -n +2 | grep -Fxq "$db_to_backup"; then
 		                	# Check if the backup location exists
 		                        if [ -e "$db_where_to_backup" ]; then
 		                        	backup_db
@@ -97,7 +102,7 @@ while true; do
 		                                echo "Backup successful!"
 						exit 0
 		                        else
-		                        	echo ""$db_where_to_backup" doesn't exist"
+		                        	echo "${db_where_to_backup} doesn't exist"
 		                                while true; do
 		                                	read -p "Do you want to create this directory? (y/n): " db_create_dir_yn
 		                                        case "$db_create_dir_yn" in
@@ -123,7 +128,7 @@ while true; do
 		                                done
 		                        fi
 		                else
-		                                echo ""$db_to_backup" doesn't exist"
+		                                echo "${db_to_backup} doesn't exist"
 		                                read -p "Give a valid thing to backup: " db_to_backup
 		                fi
 		        done
