@@ -3,7 +3,7 @@
 #Function for getting date
 get_date () {
 	gen_date=$(date '+%d-%m-%Y')
-	spec_date=$(date -d "+3 hours" +"%H-%M") # To account for the 3 hours delay on the clock
+	spec_date=$(date -d "+3 hours" +"%H:%M") # To account for the 3 hours delay on the clock
 }
 
 # Making the backup function for files/directories with namegiving process
