@@ -21,7 +21,7 @@ backup_db () {
         backup_db_name="${f_d_to_backup}_${gen_date}_${spec_date}"
         path_to_backup="${where_to_backup}/${backup_db_name}"
         # Real backup process
-	dumpmysql
+	sudo mysqldump -u root -p mydatabase --databases >> "${path_to_backup}.sql"
         echo "Backup succesful!"
 
 
