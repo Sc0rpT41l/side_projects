@@ -1,19 +1,20 @@
 #! /bin/bash
 
-# Run this every minute or so
-
 # Date to add to log filename
 gen_date=$(date +%d-%m-%y)
 
-find $1 -type f -print0 | xargs -0 -n1 'sha256sum' > /var/log/dir_checker_${gen_date}.log
-sha256sum -c /var/log/dir_checker_${gen_date}.log | grep "FAILED" > /var/log/FAILED_${gen_date}.log
+# Remove FAILED file to avoid confusion
+rm /home/kali/log/FAILED_${gen_date}.log
 
-if [ -s /var/log/FAILED_${gen_date}.log ]; 
-	echo "No changes made"
-	exit 0
+
+sha256sum -c /home/kali/log/dir_checker_${gen_date}.log | grep "FAILED" > /home/kali/log/FAILED_${gen_date}.log
+find $1 -type f -print0 | xargs -0 -n1 'sha256sum' > /home/kali/log/dir_checker_${gen_date}.log
+
+
+if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
+	echo "Changes were made, file is not empty."
 else
-
-
+	echo "No changes were made, file is empty."
 fi
 
 
