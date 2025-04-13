@@ -4,13 +4,25 @@
 # 1) Check if last line of dir_checker.log is the same as now to be able to backup the new files too
 #    Checksum doesn't take new files into account just checks for changes
 # 2) Copy changed files to this directory
+# 3) Show the changes made in changed.log (like git does)
+# 4) Put this script inside cronjobs for every 5 minutes or something like that
+# 5) Make it so that there will always be a backup dir to backup to by putting numbers behind backup dir name
+# 6) Finalise by zipping the whole backup
 ###########################################################
 
 # Date to add to log filename
 gen_date=$(date +%d-%m-%y)
 
+# Timestamp for log with changes made
+get_date () {
+        gen_date=$(date '+%d-%m-%Y')
+        spec_date=$(date -d "+3 hours" +"%H-%M") # To account for the 3 hours delay on the clock
+}
+
 # Remove FAILED file to avoid confusion
 rm $HOME/log/FAILED_${gen_date}.log 2>/dev/null
+
+# Check for new files by comparing last line containing last file
 
 # 1) &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
