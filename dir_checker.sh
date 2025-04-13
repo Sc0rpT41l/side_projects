@@ -8,12 +8,12 @@
 ###########################TO DO###########################
 # ////1) Checksum doesn't take new files into account just checks for changes
 # ////2) Make sure that the dir structure is kept!!!
-# 2) Copy changed files to this directory
+# ////2) Copy changed files to this directory
 # 3) Show the changes made in changed.log (like git does)
 # 4) Put this script inside cronjobs for every 5 minutes or something like that
 # 5) Make it so that there will always be a backup dir to backup to by putting numbers behind backup dir name
-# 6) Finalise by zipping the whole backup
-# 7) Make second given argument name for backup dir
+# 6) Finalise by zipping the whole backup, less often than running this script (every 12.00h and 00.00h => cronjob should be run at this instant
+# ////7) Make second given argument name for backup dir
 ###########################################################
 
 # Do some operations to get last dir of full path of $1
