@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #########################ARGUMENTS#########################
-# $1 => directory to check, please give full path
+# $1 => directory-to-check, please give full path
 # $2 => name for new backup folder, please give full path
 ##########################################################
 
@@ -18,9 +18,6 @@
 
 # Do some operations to get last dir of full path of $1
 last_part_dir_check=$(echo ${1} | rev | cut -d "/" -f 1 | rev)
-
-# Do some more complex operations to get something I need
-
 
 # Timestamp for log with changes made and to add to log filename
 gen_date=$(date '+%d-%m-%Y')
@@ -44,7 +41,10 @@ find $1 -type f -print0 | xargs -0 -n1 'sha256sum' > /home/kali/log/dir_checker_
 
 if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo "Changes were made, FAILED is not empty."
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}/ ################ location of file to renew t.o.v. last_par_dir_check
+	# Do some more complex operations to get something I need, which is the relative path of the modified file seen from directory-to-check POV
+	rel_path=$(cat /home/kali/log/FAILED_${gen_date}.log | awk -F"${1}" '{print $2}')
+
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}/${rel_path}
 else
 	echo "No changes were made, FAILED is empty."
 fi
