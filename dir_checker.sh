@@ -41,10 +41,18 @@ find $1 -type f -print0 | xargs -0 -n1 'sha256sum' > /home/kali/log/dir_checker_
 
 if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo "Changes were made, FAILED is not empty."
+
 	# Do some more complex operations to get something I need, which is the relative path of the modified file seen from directory-to-check POV
 	rel_path=$(cat /home/kali/log/FAILED_${gen_date}.log | awk -F"${1}" '{print $2}')
 
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}/${rel_path}
+	# Compare old file to new file and diff them into changes.log
+	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S')]=====" >> $HOME/log/changes.log
+	echo >> $HOME/log/changes.log
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs diff $1${rel_path} args >> $HOME/log/changes.log # location of old file
+	echo >> $HOME/log/changes.log
+	echo "-----------------------------------------------------" >> $HOME/log/changes.log
+	echo >> $HOME/log/changes.log
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}${rel_path} # no / before rel_path because it already starts with /
 else
 	echo "No changes were made, FAILED is empty."
 fi
