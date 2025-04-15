@@ -56,13 +56,16 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo ${rel_path}
 	echo "This is dollar1rel_path"
 	echo $1${rel_path}
-############## Problem
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs diff $1${rel_path} args >> $HOME/log/changes.log # location of old file
+	echo "Problem command"
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo $1${rel_path} args
+############## Problem, I want diff between old (backuped file) and new
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs diff --color=always $2/${last_part_dir_check}${rel_path} args >> $HOME/log/changes.log # location of old file
 ############## Problem
 	echo >> $HOME/log/changes.log
 	echo "-----------------------------------------------------" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 	echo "This is dollar2/last_part_dir_checkdollarrel_path"
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo args ${2}/${last_part_dir_check}${rel_path}
 	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}${rel_path} # no / before rel_path because it already starts with /
 else
 	echo "No changes were made, FAILED is empty."
