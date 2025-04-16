@@ -15,6 +15,7 @@
 # 6) Finalise by zipping the whole backup, less often than running this script (every 12.00h and 00.00h => cronjob should be run at this instant
 # ////7) Make second given argument name for backup dir
 # ////8) Make it so that FAILED log is cleared after old files have been renewed
+# 9) Make all /home/kali/ ... user input dependable!!!!
 ###########################################################
 
 # Do some operations to get last dir of full path of $1
@@ -43,30 +44,26 @@ find $1 -type f -print0 | xargs -0 -n1 'sha256sum' > /home/kali/log/dir_checker_
 if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo "Changes were made, FAILED is not empty."
 
-	# Do some more complex operations to get something I need, which is the relative path of the modified file seen from directory-to-check POV
-	rel_path=$(cat /home/kali/log/FAILED_${gen_date}.log | awk -F"${1}" '{print $2}' | cut -d ":" -f 1)
-
 	# Compare old file to new file and diff them into changes.log
 	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1
-	echo "This is dollar1"
-	echo $1
-	echo "This is rel_path"
-	echo ${rel_path}
-	echo "This is dollar1rel_path"
-	echo $1${rel_path}
-	echo "Problem command"
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo $2/${last_part_dir_check}${rel_path} args
-############## Problem, I want diff between old (backuped file) and new
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs diff --color=always $2/${last_part_dir_check}${rel_path} args >> $HOME/log/changes.log # location of old file
-############## Problem
+	echo
+	echo "This is with improvements"
+##########
+	while IFS= read -r full_path; do
+		rel_path="${full_path#${1}}"
+		echo "$2/${last_part_dir_check}${rel_path} $full_path"
+		diff --color=always "$2/${last_part_dir_check}${rel_path} $full_path" >> $HOME/log/changes.log
+		cp "$full_path" "$2/${last_part_dir_check}${rel_path}"
+	done < <(awk -F"${1}" '{print $2}' /home/kali/log/FAILED_${gen_date}.log | cut -d ":" -f 1)
+##########
+	echo
 	echo >> $HOME/log/changes.log
 	echo "-----------------------------------------------------" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
-	echo "This is dollar2/last_part_dir_checkdollarrel_path"
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo args ${2}/${last_part_dir_check}${rel_path}
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}${rel_path} # no / before rel_path because it already starts with /
+	# echo "This is dollar2/last_part_dir_checkdollarrel_path"
+	# cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo args ${2}/${last_part_dir_check}${rel_path}
+	# cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}${rel_path} # no / before rel_path because it already starts with /
 else
 	echo "No changes were made, FAILED is empty."
 fi
