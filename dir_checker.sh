@@ -57,7 +57,7 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo "This is dollar1rel_path"
 	echo $1${rel_path}
 	echo "Problem command"
-	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo $1${rel_path} args
+	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo $2/${last_part_dir_check}${rel_path} args
 ############## Problem, I want diff between old (backuped file) and new
 	cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs diff --color=always $2/${last_part_dir_check}${rel_path} args >> $HOME/log/changes.log # location of old file
 ############## Problem
@@ -70,13 +70,3 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 else
 	echo "No changes were made, FAILED is empty."
 fi
-
-
-
-
-
-#v	1) checksum of every file in specified dir
-#v	2) put checksum with corresponding filename in temp file
-#v	3) compare last checksum of files with newer checksum of file
-#	4) make backup of this new version of file and log this in log file with timestamp
-#	5) if file doesn't already have a checksum in temp file make a new one and backup this file
