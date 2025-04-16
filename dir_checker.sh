@@ -50,20 +50,19 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo
 	echo "This is with improvements"
 ##########
-	while IFS= read -r full_path; do
-		rel_path="${full_path#${1}}"
-		echo "$2/${last_part_dir_check}${rel_path} $full_path"
-		diff --color=always "$2/${last_part_dir_check}${rel_path} $full_path" >> $HOME/log/changes.log
-		cp "$full_path" "$2/${last_part_dir_check}${rel_path}"
+	while IFS= read -r rel_path; do
+		echo "This is rel_path"
+		echo ${rel_path}
+		echo "$2/${last_part_dir_check}${rel_path} ${1}${rel_path}" # First part is full_rel_path
+		diff --color=always "$2/${last_part_dir_check}${rel_path}" "${1}${rel_path}" >> $HOME/log/changes.log
+		cp "${1}${rel_path}" "$2/${last_part_dir_check}${rel_path}"
 	done < <(awk -F"${1}" '{print $2}' /home/kali/log/FAILED_${gen_date}.log | cut -d ":" -f 1)
 ##########
 	echo
 	echo >> $HOME/log/changes.log
 	echo "-----------------------------------------------------" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
-	# echo "This is dollar2/last_part_dir_checkdollarrel_path"
-	# cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs echo args ${2}/${last_part_dir_check}${rel_path}
-	# cat /home/kali/log/FAILED_${gen_date}.log | tr -d ":"  | cut -d " " -f 1 | xargs -Iargs cp args ${2}/${last_part_dir_check}${rel_path} # no / before rel_path because it already starts with /
+
 else
 	echo "No changes were made, FAILED is empty."
 fi
