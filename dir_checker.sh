@@ -25,8 +25,8 @@ last_part_dir_check1=$(echo ${1} | rev | cut -d "/" -f 1 | rev)
 last_part_dir_check2=$(echo ${2} | rev | cut -d "/" -f 1 | rev)
 
 # Timestamp for log with changes made and to add to log filename
-gen_date=$(date '+%d-%m-%Y')
-spec_date=$(date -d "+3 hours" +"%H-%M") # To account for the 3 hours delay on the clock
+gen_date=$(date '+%d-%m-%Y') # Day, month and year
+spec_date=$(date "+%H-%M") # Hours and minutes
 
 # Copy all files to the backup directory if it´s empty wich means it´s the first time
 if [[ -d $2 && -z "$(ls -A $2)" ]]; then # Dir exists and empty
@@ -81,15 +81,18 @@ fi
 
 if [[ "$spec_date" == "00-00" ]]; then
 	echo "bedtime!"
-	zip -r -q $HOME/.zip/${last_part_dir_check2}_.zip ${2} $HOME/log
+	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_date}.zip ${2} $HOME/log
 	if [[ $? -eq 0 ]]; then
-		rm ...
+		rm "$(ls -At $HOME/.zip | tail -n 1 | sed "s|^|${HOME}/.zip/|")"
 		exit 0
 	fi
 elif [[ "$spec_date" == "12-00" ]]; then
 	echo "wakey wakey!"
-	zip -r -q $HOME/.zip/${last_part_dir_check2}.zip ${2} $HOME/log
-	### Same as above
+	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_Date}.zip ${2} $HOME/log
+	if [[ $? -eq 0 ]]; then
+		rm "$(ls -At $HOME/.zip | tail -n 1 | sed "s|^|${HOME}/.zip/|")"
+		exit 0
+	fi
 else
 	:
 fi
