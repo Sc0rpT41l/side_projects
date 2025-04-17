@@ -19,7 +19,10 @@
 ###########################################################
 
 # Do some operations to get last dir of full path of $1
-last_part_dir_check=$(echo ${1} | rev | cut -d "/" -f 1 | rev)
+last_part_dir_check1=$(echo ${1} | rev | cut -d "/" -f 1 | rev)
+
+# Do some more operations to get last dir of full path of $2
+last_part_dir_check2=$(echo ${2} | rev | cut -d "/" -f 1 | rev)
 
 # Timestamp for log with changes made and to add to log filename
 gen_date=$(date '+%d-%m-%Y')
@@ -53,10 +56,10 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	while IFS= read -r rel_path; do
 		echo "This is rel_path"
 		echo ${rel_path}
-		echo "$2/${last_part_dir_check}${rel_path}" " >> " "${1}${rel_path}" >> $HOME/log/changes.log
-		diff --color=always "$2/${last_part_dir_check}${rel_path}" "${1}${rel_path}" >> $HOME/log/changes.log
+		echo "$2/${last_part_dir_check1}${rel_path}" " >> " "${1}${rel_path}" >> $HOME/log/changes.log
+		diff --color=always "$2/${last_part_dir_check1}${rel_path}" "${1}${rel_path}" >> $HOME/log/changes.log
 		echo >> $HOME/log/changes.log
-		cp "${1}${rel_path}" "$2/${last_part_dir_check}${rel_path}"
+		cp "${1}${rel_path}" "$2/${last_part_dir_check1}${rel_path}"
 	done < <(awk -F"${1}" '{print $2}' /home/kali/log/FAILED_${gen_date}.log | cut -d ":" -f 1)
 ##########
 	echo
@@ -71,8 +74,10 @@ fi
 # if date is 12 hours or 24 hours then zip whole backup folder into zip folder
 # and delete zip folder with date - 4 hours
 
-if [[ "$(date +%H:%M)" == "10:05" ]]; then
+if [[ "$(date +%H:%M)" == "12:00" ||"$(date +%H:%M)" == "00:00" ]]; then
 	echo "wakey wakey!!"
+	zip $HOME/.zip/${last_part_dir_check2}.zip ${2} $HOME/log -r -q
+	rm 
 	exit 0
 else
 	:
