@@ -72,13 +72,24 @@ else
 fi
 
 # if date is 12 hours or 24 hours then zip whole backup folder into zip folder
-# and delete zip folder with date - 4 hours
+# and delete last zip folder
+if [[ ! -d $HOME/.zip ]]; then
+	mkdir $HOME/.zip
+else
+	:
+fi
 
-if [[ "$(date +%H:%M)" == "12:00" ||"$(date +%H:%M)" == "00:00" ]]; then
-	echo "wakey wakey!!"
-	zip $HOME/.zip/${last_part_dir_check2}.zip ${2} $HOME/log -r -q
-	rm 
-	exit 0
+if [[ "$spec_date" == "00-00" ]]; then
+	echo "bedtime!"
+	zip -r -q $HOME/.zip/${last_part_dir_check2}_.zip ${2} $HOME/log
+	if [[ $? -eq 0 ]]; then
+		rm ...
+		exit 0
+	fi
+elif [[ "$spec_date" == "12-00" ]]; then
+	echo "wakey wakey!"
+	zip -r -q $HOME/.zip/${last_part_dir_check2}.zip ${2} $HOME/log
+	### Same as above
 else
 	:
 fi
