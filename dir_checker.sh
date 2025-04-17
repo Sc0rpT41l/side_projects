@@ -53,8 +53,9 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	while IFS= read -r rel_path; do
 		echo "This is rel_path"
 		echo ${rel_path}
-		echo "$2/${last_part_dir_check}${rel_path} ${1}${rel_path}" # First part is full_rel_path
+		echo "$2/${last_part_dir_check}${rel_path}" " >> " "${1}${rel_path}" >> $HOME/log/changes.log
 		diff --color=always "$2/${last_part_dir_check}${rel_path}" "${1}${rel_path}" >> $HOME/log/changes.log
+		echo >> $HOME/log/changes.log
 		cp "${1}${rel_path}" "$2/${last_part_dir_check}${rel_path}"
 	done < <(awk -F"${1}" '{print $2}' /home/kali/log/FAILED_${gen_date}.log | cut -d ":" -f 1)
 ##########
@@ -67,10 +68,12 @@ else
 	echo "No changes were made, FAILED is empty."
 fi
 
+# if date is 12 hours or 24 hours then zip whole backup folder into zip folder
+# and delete zip folder with date - 4 hours
 
-
-
-
-
-if date is 12 hours or 24 hours then zip whole backup folder into zip folder
-and delete zip folder with date - 4 hours 
+if [[ "$(date +%H:%M)" == "10:05" ]]; then
+	echo "wakey wakey!!"
+	exit 0
+else
+	:
+fi
