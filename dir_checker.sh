@@ -3,7 +3,7 @@
 #########################ARGUMENTS#########################
 # $1 => directory-to-check, please give full path
 # $2 => name for new backup folder, please give full path
-##########################################################
+###########################################################
 
 ###########################TO DO###########################
 # ////1) Checksum doesn't take new files into account just checks for changes
