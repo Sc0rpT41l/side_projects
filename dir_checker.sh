@@ -25,8 +25,8 @@ last_part_dir_check1=$(echo ${1} | rev | cut -d "/" -f 1 | rev)
 last_part_dir_check2=$(echo ${2} | rev | cut -d "/" -f 1 | rev)
 
 # Timestamp for log with changes made and to add to log filename
-gen_date=$(date '+%d-%m-%Y') # Day, month and year
-spec_date=$(date "+%H-%M") # Hours and minutes
+gen_date=$(TZ=Europe/Paris date '+%d-%m-%Y') # Day, month and year
+spec_date=$(TZ=Europe/Paris date '+%H-%M') # Hours and minutes
 
 # Copy all files to the backup directory if it´s empty wich means it´s the first time
 if [[ -d $2 && -z "$(ls -A $2)" ]]; then # Dir exists and empty
@@ -71,6 +71,13 @@ else
 	echo "No changes were made, FAILED is empty."
 fi
 
+# Check if new files are added, if so put them in backup folder
+
+
+
+
+
+
 # if date is 12 hours or 24 hours then zip whole backup folder into zip folder
 # and delete last zip folder
 if [[ ! -d $HOME/.zip ]]; then
@@ -82,14 +89,14 @@ fi
 if [[ "$spec_date" == "00-00" ]]; then
 	echo "bedtime!"
 	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_date}.zip ${2} $HOME/log
-	if [[ $? -eq 0 ]]; then
+	if [[ $? -eq 0 && $(ls -A ${HOME}/.zip | wc -l) > 1 ]]; then
 		rm "$(ls -At $HOME/.zip | tail -n 1 | sed "s|^|${HOME}/.zip/|")"
 		exit 0
 	fi
-elif [[ "$spec_date" == "12-00" ]]; then
+elif [[ "$spec_date" == "12-16" ]]; then
 	echo "wakey wakey!"
-	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_Date}.zip ${2} $HOME/log
-	if [[ $? -eq 0 ]]; then
+	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_date}.zip ${2} $HOME/log
+	if [[ $? -eq 0 && $(ls -A ${HOME}/.zip | wc -l) > 1 ]]; then
 		rm "$(ls -At $HOME/.zip | tail -n 1 | sed "s|^|${HOME}/.zip/|")"
 		exit 0
 	fi
