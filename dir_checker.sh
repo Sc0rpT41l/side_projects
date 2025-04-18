@@ -79,14 +79,15 @@ if [[ -s $HOME/log/.new_files.txt ]]; then
 	# Put new files inside backup folder
 	while IFS= read -r newfile; do
 		cp "$newfile" "$2/${last_part_dir_check1}"$(awk -F"$1" '{print $2}' <<< "$newfile")
+		echo "Added $2/${last_part_dir_check1}"$(awk -F"$1" '{print $2}' <<< "$newfile") >> $HOME/log/changes.log
 	done < $HOME/log/.new_files.txt
 
 	echo >> $HOME/log/changes.log
 	echo "---------------------------------------------" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 
-	# Empty the .new_files.txt file
-	echo > $HOME/log/.new_files.txt
+	# Empty the .new_files.txt file => will be done later see line 142
+
 
 else
 	echo "No new files detected"
@@ -116,14 +117,24 @@ find $1 -type f -print0 | xargs -0 -n1 'sha256sum' > /home/kali/log/dir_checker_
 if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo "Changes were made, FAILED is not empty."
 
+	# Load list of new files to skip them from diffs
+	mapfile -t new_files_array < "${HOME}/log/.new_files.txt"
+
 	# Compare old file to new file and diff them into changes.log
 	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
 	echo "================Changes made================" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 
 	while IFS= read -r rel_path; do
-		echo "This is rel_path"
-		echo ${rel_path}
+		skip=false
+		for new_file in "${new_files_array[@]}"; do
+			if [[ "$new_file" == *"rel_path" ]]; then
+				skip=true
+				break
+			fi
+		done
+		$skip && continue
+
 		echo "$2/${last_part_dir_check1}${rel_path}" " >> " "${1}${rel_path}" >> $HOME/log/changes.log
 		diff --color=always "$2/${last_part_dir_check1}${rel_path}" "${1}${rel_path}" >> $HOME/log/changes.log
 		echo >> $HOME/log/changes.log
@@ -137,6 +148,8 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 else
 	echo "No changes were made, FAILED is empty."
 fi
+
+echo > $HOME/log/.new_files.txt
 
 ###########################################################
 
