@@ -19,6 +19,7 @@
 # 10) Make often-used paths into variables
 # 11) Make sure script doesn't flip when deleted files can´t be backupped anymore
 # 12) Make the script like a watcher or something like that
+# 13) Show the deleted files in the changes log
 ###########################################################
 
 #--------------------------
@@ -124,17 +125,23 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 
 	# Compare old file to new file and diff them into changes.log
 	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
-	echo "================Changes made================" >> $HOME/log/changes.log
+	echo "================Changes made=================" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 
 	while IFS= read -r rel_path; do
 		skip=false
+		# Check if an element of new_files_array is also part of FAILED, if true skip this one because it's new and is causing problems
 		for new_file in "${new_files_array[@]}"; do
 			if [[ "$new_file" == *"$rel_path" ]]; then
 				skip=true
 				break
 			fi
 		done
+
+		# Skip the deleted files, those files don't exist in ${1} location
+		if [[ ! -f "${1}${rel_path}"  ]]; then
+			skip=true
+		fi
 
 		# If file is new, skip it
 		if $skip; then
