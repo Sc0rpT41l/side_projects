@@ -35,7 +35,7 @@ last_part_dir_check2=$(echo ${2} | rev | cut -d "/" -f 1 | rev)
 
 # Timestamp for log with changes made and to add to log filename
 gen_date=$(TZ=Europe/Paris date '+%d-%m-%Y') # Day, month and year
-spec_date=$(TZ=Europe/Paris date '+%H-%M') # Hours and minutes
+spec_date=$(TZ=Europe/Paris date '+%H:%M') # Hours and minutes
 
 ###########################################################
 
@@ -72,11 +72,18 @@ find $1 -type f | sort > "$current"
 comm -13 "$SNAPSHOT" "$current" > $HOME/log/.new_files.txt
 if [[ -s $HOME/log/.new_files.txt ]]; then
 	echo "New files detected"
-	cat $HOME/log/.new_files.txt
+	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
+	echo "===============New file added===============" >> $HOME/log/changes.log
+	echo >> $HOME/log/changes.log
+
 	# Put new files inside backup folder
 	while IFS= read -r newfile; do
-		cp "$newfile" 
+		cp "$newfile" "$2/${last_part_dir_check1}"$(awk -F"$1" '{print $2}' <<< "$newfile")
 	done < $HOME/log/.new_files.txt
+
+	echo >> $HOME/log/changes.log
+	echo "---------------------------------------------" >> $HOME/log/changes.log
+	echo >> $HOME/log/changes.log
 
 	# Empty the .new_files.txt file
 	echo > $HOME/log/.new_files.txt
@@ -110,10 +117,9 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	echo "Changes were made, FAILED is not empty."
 
 	# Compare old file to new file and diff them into changes.log
-	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H-%M-%S') ]=====" >> $HOME/log/changes.log
+	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
+	echo "================Changes made================" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
-	echo
-	echo "This is with improvements"
 
 	while IFS= read -r rel_path; do
 		echo "This is rel_path"
@@ -125,7 +131,7 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	done < <(awk -F"${1}" '{print $2}' /home/kali/log/FAILED_${gen_date}.log | cut -d ":" -f 1)
 
 	echo >> $HOME/log/changes.log
-	echo "-----------------------------------------------------" >> $HOME/log/changes.log
+	echo "---------------------------------------------" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 
 else
@@ -146,14 +152,14 @@ else
 	:
 fi
 
-if [[ "$spec_date" == "00-00" ]]; then
+if [[ "$spec_date" == "00:00" ]]; then
 	echo "bedtime!"
 	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_date}.zip ${2} $HOME/log
 	if [[ $? -eq 0 && $(ls -A ${HOME}/.zip | wc -l) > 1 ]]; then
 		rm "$(ls -At $HOME/.zip | tail -n 1 | sed "s|^|${HOME}/.zip/|")"
 		exit 0
 	fi
-elif [[ "$spec_date" == "12-00" ]]; then
+elif [[ "$spec_date" == "12:00" ]]; then
 	echo "wakey wakey!"
 	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_date}.zip ${2} $HOME/log
 	if [[ $? -eq 0 && $(ls -A ${HOME}/.zip | wc -l) > 1 ]]; then
