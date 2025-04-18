@@ -18,6 +18,7 @@
 # 9) Make all /home/kali/ ... user input dependable!!!!
 # 10) Make often-used paths into variables
 # 11) Make sure script doesn't flip when deleted files can´t be backupped anymore
+# 12) Make the script like a watcher or something like that
 ###########################################################
 
 #--------------------------
@@ -63,6 +64,7 @@ fi
 if [[ ! -f "$SNAPSHOT" ]]; then
 	find $1 -type f | sort > "$SNAPSHOT"
 	echo "snapshot created"
+
 fi
 
 # Get current file list and store it in temp file
@@ -72,7 +74,7 @@ find $1 -type f | sort > "$current"
 comm -13 "$SNAPSHOT" "$current" > $HOME/log/.new_files.txt
 if [[ -s $HOME/log/.new_files.txt ]]; then
 	echo "New files detected"
-	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
+	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
 	echo "===============New file added===============" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 
@@ -121,19 +123,23 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 	mapfile -t new_files_array < "${HOME}/log/.new_files.txt"
 
 	# Compare old file to new file and diff them into changes.log
-	echo "===== [ Timestamp: $(date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
+	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
 	echo "================Changes made================" >> $HOME/log/changes.log
 	echo >> $HOME/log/changes.log
 
 	while IFS= read -r rel_path; do
 		skip=false
 		for new_file in "${new_files_array[@]}"; do
-			if [[ "$new_file" == *"rel_path" ]]; then
+			if [[ "$new_file" == *"$rel_path" ]]; then
 				skip=true
 				break
 			fi
 		done
-		$skip && continue
+
+		# If file is new, skip it
+		if $skip; then
+			continue
+		fi
 
 		echo "$2/${last_part_dir_check1}${rel_path}" " >> " "${1}${rel_path}" >> $HOME/log/changes.log
 		diff --color=always "$2/${last_part_dir_check1}${rel_path}" "${1}${rel_path}" >> $HOME/log/changes.log
@@ -147,6 +153,12 @@ if [[ -s /home/kali/log/FAILED_${gen_date}.log ]]; then
 
 else
 	echo "No changes were made, FAILED is empty."
+	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $HOME/log/changes.log
+	echo "==========No changes nor new files==========" >> $HOME/log/changes.log
+	echo >> $HOME/log/changes.log
+	echo "---------------------------------------------" >> $HOME/log/changes.log
+	echo >> $HOME/log/changes.log
+
 fi
 
 echo > $HOME/log/.new_files.txt
