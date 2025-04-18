@@ -1,5 +1,5 @@
 #! /bin/bash
-
+## WATCHER ##
 #########################ARGUMENTS#########################
 # $1 => directory-to-check, please give full path
 # $2 => name for new backup folder, please give full path
@@ -16,6 +16,7 @@
 # ////7) Make second given argument name for backup dir
 # ////8) Make it so that FAILED log is cleared after old files have been renewed
 # 9) Make all /home/kali/ ... user input dependable!!!!
+
 ###########################################################
 
 # Do some operations to get last dir of full path of $1
@@ -37,6 +38,10 @@ elif [[ ! -d $2 ]]; then # Dir not exist and empty
 else # Dir exists and NOT empty => NOT first time
 	:
 fi
+
+# Check for new files with snapshot
+
+
 
 # Remove FAILED file to avoid confusion (test phase)
 rm $HOME/log/FAILED_${gen_date}.log 2>/dev/null
@@ -71,12 +76,6 @@ else
 	echo "No changes were made, FAILED is empty."
 fi
 
-# Check if new files are added, if so put them in backup folder
-
-
-
-
-
 
 # if date is 12 hours or 24 hours then zip whole backup folder into zip folder
 # and delete last zip folder
@@ -93,7 +92,7 @@ if [[ "$spec_date" == "00-00" ]]; then
 		rm "$(ls -At $HOME/.zip | tail -n 1 | sed "s|^|${HOME}/.zip/|")"
 		exit 0
 	fi
-elif [[ "$spec_date" == "12-16" ]]; then
+elif [[ "$spec_date" == "12-00" ]]; then
 	echo "wakey wakey!"
 	zip -r -q $HOME/.zip/${last_part_dir_check2}_${gen_date}_${spec_date}.zip ${2} $HOME/log
 	if [[ $? -eq 0 && $(ls -A ${HOME}/.zip | wc -l) > 1 ]]; then
