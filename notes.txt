@@ -1,0 +1,4 @@
+Put log of deletion in dir_checker in while 
+loop where you check if the rel_path still 
+exists in the dir to check
+
