@@ -45,6 +45,8 @@ h_new_files_p="$HOME/log/.new_files.txt"
 changes_log_p="$HOME/log/changes.log"
 FAILED_file_p="$HOME/log/FAILED_${gen_date}.log"
 
+# Empty list/array for deleted files
+deleted_file=()
 
 ###########################################################
 
@@ -84,7 +86,7 @@ comm -13 "$SNAPSHOT" "$current" > $h_new_files_p
 if [[ -s $h_new_files_p ]]; then
 	echo "New files detected"
 	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $changes_log_p
-	echo "===============New file added===============" >> $changes_log_p
+	echo "=============New file(s) added==============" >> $changes_log_p
 	echo >> $changes_log_p
 
 	# Put new files inside backup folder
@@ -133,11 +135,6 @@ if [[ -s $FAILED_file_p ]]; then
 	# Load list of new files to skip them from diffs
 	mapfile -t new_files_array < "${HOME}/log/.new_files.txt"
 
-	# Compare old file to new file and diff them into changes.log
-	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $changes_log_p
-	echo "================Changes made=================" >> $changes_log_p
-	echo >> $changes_log_p
-
 	while IFS= read -r rel_path; do
 		skip=false
 		# Check if an element of new_files_array is also part of FAILED, if true skip this one because it's new and is causing problems
@@ -151,31 +148,43 @@ if [[ -s $FAILED_file_p ]]; then
 		# Skip the deleted files, those files don't exist in ${1} location
 		if [[ ! -f "${1}${rel_path}"  ]]; then
 			skip=true
-		fi
-
-		# If file is new, skip it
-		if $skip; then
+			deleted_files+=("${rel_path}")
 			continue
 		fi
 
-		echo "$2/${last_part_dir_check1}${rel_path}" " >> " "${1}${rel_path}" >> $changes_log_p
-		diff --color=always "$2/${last_part_dir_check1}${rel_path}" "${1}${rel_path}" >> $changes_log_p
-		echo >> $changes_log_p
-		cp "${1}${rel_path}" "$2/${last_part_dir_check1}${rel_path}"
+		# If it doesn't skip it, the rel_path shall be a modified file
+		if ! $skip; then
+			echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $changes_log_p
+			echo "==============Change(s) made================" >> $changes_log_p
+			echo >> $changes_log_p
+			echo "$2/${last_part_dir_check1}${rel_path}" " >> " "${1}${rel_path}" >> $changes_log_p
+			diff --color=always "$2/${last_part_dir_check1}${rel_path}" "${1}${rel_path}" >> $changes_log_p
+			echo >> $changes_log_p
+			cp "${1}${rel_path}" "$2/${last_part_dir_check1}${rel_path}"
+		fi
+
 	done < <(awk -F"${1}" '{print $2}' $FAILED_file_p | cut -d ":" -f 1)
 
-	echo >> $changes_log_p
-	echo "---------------------------------------------" >> $changes_log_p
-	echo >> $changes_log_p
+	# List with deleted files is not empty
+	if [[ ${#deleted_files[@]} -gt 0 ]]; then
+		echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $changes_log_p
+		echo "==============File(s) deleted================" >> $changes_log_p
+		echo >> $changes_log_p
+		for deleted in "${deleted_files[@]}"; do
+			echo "${deleted} was deleted" >> $changes_log_p
+		done
+		echo >> $changes_log_p
+		echo "---------------------------------------------" >> $changes_log_p
+		echo >> $changes_log_p
+	fi
 
 else
 	echo "No changes were made, FAILED is empty."
 	echo "===== [ Timestamp: $(TZ=Europe/Paris date '+%Y-%m-%d %H:%M:%S') ]=====" >> $changes_log_p
-	echo "==========No changes nor new files==========" >> $changes_log_p
+	echo "========No change(s) nor new file(s)========" >> $changes_log_p
 	echo >> $changes_log_p
-	echo "---------------------------------------------" >> $changes_log_p
+	echo "--------------------------------------------" >> $changes_log_p
 	echo >> $changes_log_p
-
 fi
 
 echo > $h_new_files_p
